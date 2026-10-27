@@ -27,7 +27,7 @@ public final class ExchangeFlow {
   if(!sku.valid()||!sku.token.equals(token)||!sku.membershipCard())throw new Exception("商品信息变化，请刷新后重试");
   if(sku.price.isEmpty())throw new Exception("官方兑换积分缺失，未发起扣分");
   JSONObject button=detail.optJSONObject("purchase_button");String status=button==null?"":button.optString("status");
-  if(!status.equals("available"))throw new Exception(statusReason(status));
+  if(!status.equals("available"))throw new Exception(status.equals("sold_out")?sku.saleInfo(System.currentTimeMillis()):statusReason(status));
   int delivery=detail.optInt("delivery_type",-1);if(delivery!=1&&delivery!=2)throw new Exception("此商品不属于当前支持的虚拟大会员权益，未发起兑换");
   verify(a,sku);StringBuilder notice=new StringBuilder();JSONArray rules=detail.optJSONArray("exchange_notice");
   if(rules!=null)for(int i=0;i<rules.length();i++){JSONObject rule=rules.optJSONObject(i);if(rule!=null&&"text".equals(rule.optString("type"))&&notice.length()<1800)notice.append(rule.optString("content")).append('\n');}

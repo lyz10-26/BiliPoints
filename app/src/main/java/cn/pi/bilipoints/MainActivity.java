@@ -3,7 +3,7 @@ import android.app.*;import android.os.*;import android.view.*;import android.wi
 
 public class MainActivity extends Activity {
  final int PINK=0xFFEB4D87,INK=0xFF222330,MUTED=0xFF7F8293,GREEN=0xFF16886A;
- Handler h=new Handler();ExecutorService io=Executors.newSingleThreadExecutor();FrameLayout root;LinearLayout content,tasks;TextView total,month,deadline,account,notice,sync,logView,vipBadge,vipExpiry,summary,levelLabel,experienceLabel,uidLabel,watchTitle,watchHint,watchState;LinearLayout exchangeGrid;TextView exchangeBalance,exchangeStatus,exchangeResult;String exchangeResultText="";boolean checkingUpdate=false;Button exchangeRefresh;ArrayList<ExchangeSku> exchangeItems=new ArrayList<>();String exchangeMessage="登录后同步官方兑换商品";TextView walletLabel,executionLabel;ProgressBar executionBar;int executionPercent=0;volatile double taskBase=5,taskSpan=85;HiddenWatch hiddenWatch;Button watchButton;boolean notificationAsked=false;Runnable pendingAccountAction;int updateTaps=0;long lastUpdateTap=0;ImageView avatar,vipIcon;ProfileInfo profile=new ProfileInfo();ProfileImages images=new ProfileImages();String imageOwner="",badgeAsset="";ProgressBar progress;Button run,claim,refresh,cancel;SilentBrowser browser;
+ Handler h=new Handler();ExecutorService io=Executors.newSingleThreadExecutor();FrameLayout root;LinearLayout content,tasks;TextView total,month,deadline,account,notice,sync,logView,vipBadge,vipExpiry,summary,levelLabel,experienceLabel,uidLabel,watchTitle,watchHint,watchState;LinearLayout exchangeGrid;TextView exchangeBalance,exchangeStatus,exchangeResult;String exchangeResultText="";boolean checkingUpdate=false;Button exchangeRefresh;ArrayList<ExchangeSku> exchangeItems=new ArrayList<>();String exchangeMessage="登录后同步官方兑换商品";TextView walletLabel,executionLabel;ProgressBar executionBar;int executionPercent=0;volatile double taskBase=5,taskSpan=85;HiddenWatch hiddenWatch;Button watchButton;boolean notificationAsked=false;Runnable pendingAccountAction;TapBurst updateBurst=new TapBurst();boolean updateScheduled=false;long updateRun=0;ImageView avatar,vipIcon;ProfileInfo profile=new ProfileInfo();ProfileImages images=new ProfileImages();String imageOwner="",badgeAsset="";ProgressBar progress;Button run,claim,refresh,cancel;SilentBrowser browser;
  volatile boolean cancelled=false,destroyed=false;boolean busy=false,active=false,verified=false,showCompleted=false;volatile long generation=0;long lastSyncMs=0;String user="未登录",mid="",lastSync="尚未同步";VipInfo vip=new VipInfo();int points=-1,monthly=-1,limit=-1;
  ConcurrentHashMap<String,JSONArray> evidence=new ConcurrentHashMap<>();ArrayList<TaskItem> items=new ArrayList<>();HashMap<String,String> outcomes=new HashMap<>();HashMap<String,String> details=new HashMap<>();StringBuilder log=new StringBuilder();
  @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(0xFFF7F6FA);getWindow().setNavigationBarColor(0xFFF7F6FA);getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);build();h.post(clock);h.postDelayed(()->{if(api().authenticated())refresh();},350);}
@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
   buildExchange();
   LinearLayout actions=card();TextView actionTitle=text("今日执行",16,INK);actionTitle.setTypeface(null,Typeface.BOLD);actions.addView(actionTitle);summary=text("执行结果将在这里汇总",12,MUTED);actions.addView(summary);run=button("一键执行并核验",true);actions.addView(run,new LinearLayout.LayoutParams(-1,dp(44)));run.setOnClickListener(v->startAssist());LinearLayout ar=new LinearLayout(this);refresh=button("更新积分",false);claim=button("领取待领积分",false);pair(ar,refresh);pair(ar,claim);actions.addView(ar);refresh.setOnClickListener(v->refresh());claim.setOnClickListener(v->claimAll());cancel=button("停止执行",false);LinearLayout.LayoutParams stopLayout=new LinearLayout.LayoutParams(-1,dp(44));stopLayout.setMargins(dp(3),dp(10),dp(3),dp(8));actions.addView(cancel,stopLayout);cancel.setVisibility(View.GONE);cancel.setOnClickListener(v->stop());executionLabel=text("执行进度 0%",12,MUTED);actions.addView(executionLabel);executionBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);executionBar.setMax(100);executionBar.setProgressTintList(android.content.res.ColorStateList.valueOf(PINK));actions.addView(executionBar,new LinearLayout.LayoutParams(-1,dp(4)));notice=text("更新与执行均在本页完成",11,MUTED);notice.setMaxLines(2);actions.addView(notice);
   LinearLayout video=card();LinearLayout vr=new LinearLayout(this);vr.setGravity(Gravity.CENTER_VERTICAL);watchTitle=text("观看剧集领积分",15,INK);watchTitle.setTypeface(null,Typeface.BOLD);vr.addView(watchTitle,new LinearLayout.LayoutParams(0,-2,1));watchState=text("待同步",11,PINK);vr.addView(watchState);video.addView(vr);watchHint=text("默认观看：凡人修仙传最新正片",12,MUTED);watchHint.setMaxLines(2);video.addView(watchHint);video.addView(text("隐藏静音播放 · 只统计实际播放进度 · 0.3.3网页播放模式 · 实际播放计时",11,MUTED));watchButton=button("开始隐藏播放最新一集",false);video.addView(watchButton,new LinearLayout.LayoutParams(-1,dp(44)));watchButton.setOnClickListener(v->watchLatest());
-  deadline=text("",11,MUTED);deadline.setPadding(0,dp(10),0,dp(3));content.addView(deadline);tasks=col();content.addView(tasks);drawTasks();LinearLayout logs=card();logs.addView(text("执行详情",15,INK));logView=text("暂无记录",12,MUTED);logView.setMaxLines(2);logs.addView(logView);Button more=button("展开 / 收起",false);logs.addView(more);more.setOnClickListener(v->logView.setMaxLines(logView.getMaxLines()==2?100:2));TextView foot=text("© "+Calendar.getInstance().get(Calendar.YEAR)+" 开发者 π · Powered by GPT\n构建模型：GPT-6（精确子型号未提供）\n非哔哩哔哩官方应用 · v0.4.5 beta\nBilibili相关商标与内容归各自权利人所有",11,MUTED);foot.setPadding(dp(6),dp(16),dp(6),dp(4));foot.setGravity(Gravity.CENTER);content.addView(foot);
+  deadline=text("",11,MUTED);deadline.setPadding(0,dp(10),0,dp(3));content.addView(deadline);tasks=col();content.addView(tasks);drawTasks();LinearLayout logs=card();logs.addView(text("执行详情",15,INK));logView=text("暂无记录",12,MUTED);logView.setMaxLines(2);logs.addView(logView);Button more=button("展开 / 收起",false);logs.addView(more);more.setOnClickListener(v->logView.setMaxLines(logView.getMaxLines()==2?100:2));TextView foot=text("© "+Calendar.getInstance().get(Calendar.YEAR)+" 开发者 π · Powered by GPT\n构建模型：GPT-6（精确子型号未提供）\n非哔哩哔哩官方应用 · v0.4.6 beta\nBilibili相关商标与内容归各自权利人所有",11,MUTED);foot.setPadding(dp(6),dp(16),dp(6),dp(4));foot.setGravity(Gravity.CENTER);content.addView(foot);
  }
  void buildExchange(){
   LinearLayout c=card();LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);
@@ -45,6 +45,10 @@ public class MainActivity extends Activity {
     count+=skus.length();JSONObject pagination=d.optJSONObject("page");int total=pagination==null?-1:pagination.optInt("total",-1);
     more=skus.length()>=20&&(total<0||count<total);if(!more)break;
    }
+   int lookedUp=0;
+   for(int n=0;n<all.size()&&lookedUp<10;n++){
+    ExchangeSku sku=all.get(n);if((sku.temporarySoldOut||sku.soldOut)&&sku.nextSoldAt==0){lookedUp++;check(id);try{JSONObject full=data(a.exchangeInfo(sku.token));if(sku.token.equals(full.optString("token")))all.set(n,sku.withInventory(full));}catch(Exception e){if(e instanceof BiliApi.ApiError&&((BiliApi.ApiError)e).code==-101)throw e;}}
+   }
    check(id);final String message=(all.isEmpty()?"本次未获取到大会员兑换商品，可前往官方商城查看": "商品信息已同步 · 兑换结果在本页显示")+(more?"；已扫描前100项，更多见官方商城":"");
    post(()->{exchangeItems=all;exchangeMessage=message;drawExchange();});
   }catch(Exception e){check(id);if(e instanceof BiliApi.ApiError&&((BiliApi.ApiError)e).code==-101)throw e;
@@ -59,29 +63,32 @@ public class MainActivity extends Activity {
    LinearLayout tile=col();tile.setPadding(dp(8),dp(8),dp(8),dp(10));tile.setBackground(bg(0xFFFFF7FA,14));LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,-2,1);tp.setMargins(dp(3),dp(6),dp(3),0);row.addView(tile,tp);
    ImageView picture=new ImageView(this);picture.setScaleType(ImageView.ScaleType.FIT_CENTER);picture.setBackground(bg(0xFFFFEAF1,10));picture.setClipToOutline(true);picture.setContentDescription(s.title+"官方商品图");tile.addView(picture,new LinearLayout.LayoutParams(-1,dp(116)));images.load(s.picture,picture,null);
    TextView name=text("",13,INK);name.setText(s.title);name.setMaxLines(2);name.setMinLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setTypeface(null,Typeface.BOLD);tile.addView(name);
-   String label=!s.stock.isEmpty()?s.stock:(!s.promotion.isEmpty()?s.promotion+" ":"")+s.restriction;
-   TextView tags=text("",10,MUTED);tags.setText(label);tags.setMinLines(1);tags.setMaxLines(2);tile.addView(tags);
+   String sale=s.saleInfo(System.currentTimeMillis());String label=!sale.isEmpty()?sale:(!s.promotion.isEmpty()?s.promotion+" ":"")+s.restriction;
+   TextView tags=text("",10,MUTED);tags.setText(label);tags.setMinLines(1);tags.setMaxLines(4);tile.addView(tags);
    TextView price=text("",18,PINK);price.setText(s.price.isEmpty()?"积分见详情":s.price+" 大积分");price.setTypeface(null,Typeface.BOLD);tile.addView(price);
    if(!s.origin.isEmpty()&&!s.price.equals(s.origin)){TextView old=text(s.origin+" 大积分",10,MUTED);old.setPaintFlags(old.getPaintFlags()|android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);tile.addView(old);}
-   Button detail=button(s.soldOut?"已售罄 · 详情":s.temporarySoldOut?"暂兑完 · 详情":"去兑换",!s.soldOut&&!s.temporarySoldOut);LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(38));bp.topMargin=dp(6);tile.addView(detail,bp);if(!exchangeStore().get(mid+":"+s.token).isEmpty())detail.setText("核验上次兑换");detail.setOnClickListener(v->exchangeClicked(s));picture.setOnClickListener(v->exchangeClicked(s));
+   Button detail=button(s.soldOut?"已售罄":s.temporarySoldOut?"暂兑完":"去兑换",!s.soldOut&&!s.temporarySoldOut);LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(38));bp.topMargin=dp(6);tile.addView(detail,bp);if(!exchangeStore().get(mid+":"+s.token).isEmpty())detail.setText("核验上次兑换");detail.setOnClickListener(v->exchangeClicked(s));picture.setOnClickListener(v->exchangeClicked(s));
   }
   if(row!=null&&exchangeItems.size()%2==1)row.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
  }
  void pinkGradient(TextView v){v.post(()->{float width=Math.max(1,v.getPaint().measureText(v.getText().toString()));v.getPaint().setShader(new android.graphics.LinearGradient(0,0,width,0,new int[]{0xFFFF82B3,0xFFE63B83},null,android.graphics.Shader.TileMode.CLAMP));v.invalidate();});}
- void accountMenu(){new AlertDialog.Builder(this).setTitle("账号与登录 · "+versionName()).setItems(new String[]{"查看当前账号资料","登录 / 切换账号","查看官方积分中心","退出并清除本机会话","版本更新"},(d,n)->{if(n==0)new AlertDialog.Builder(this).setTitle(user).setMessage("UID "+mid+"\n"+profile.levelText+" · "+profile.experience+"\nB币 "+profile.bcoins+" · 硬币 "+profile.coins+"\n"+vip.state+"\n"+vip.expiry).setPositiveButton("关闭",null).show();else if(n==1)accountAction(()->login());else if(n==2)open(BiliApi.CENTER);else if(n==3)accountAction(()->logout());else versionCenter();}).show();}
- String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "未知版本";}}
- void versionCenter(){
-  LinearLayout panel=col();panel.setPadding(dp(20),dp(16),dp(20),dp(12));panel.addView(text("当前版本："+versionName(),15,INK));TextView info=text("更新来源：lyz10-26/BiliPoints",12,MUTED);panel.addView(info);
-  Button update=button("检查更新",true);panel.addView(update,new LinearLayout.LayoutParams(-1,dp(44)));
-  update.setOnClickListener(v->{long now=SystemClock.elapsedRealtime();if(now-lastUpdateTap>3000)updateTaps=0;lastUpdateTap=now;updateTaps++;
-   if(updateTaps==5){updateTaps=0;new AlertDialog.Builder(this).setMessage("爱你哟，作者微信号lyz--00").setPositiveButton("知道啦",null).show();}
-   if(checkingUpdate)return;checkingUpdate=true;info.setText("正在检查仓库最新版本…");
-   new Thread(()->{try{AppUpdates latest=AppUpdates.fetch();int current=getPackageManager().getPackageInfo(getPackageName(),0).versionCode;post(()->{checkingUpdate=false;info.setText(latest.code>current?"发现新版本："+latest.name:latest.code==current?"当前已是仓库最新版（"+latest.name+"）":"当前版本高于仓库发布版本（"+latest.name+"）");if(latest.code>current)new AlertDialog.Builder(this).setTitle("版本更新").setMessage("当前："+versionName()+"\n最新："+latest.name).setPositiveButton("前往仓库下载",(d,w)->openRepository(latest.apk)).setNegativeButton("稍后",null).show();});}
-    catch(Exception e){post(()->{checkingUpdate=false;info.setText("检查更新失败，请前往仓库查看最新安装包");});}},"check-update").start();
-  });
-  Button repo=button("前往仓库下载最新版",false);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,dp(44));rp.topMargin=dp(8);panel.addView(repo,rp);repo.setOnClickListener(v->openRepository(AppUpdates.REPO));
-  new AlertDialog.Builder(this).setTitle("版本更新").setView(panel).setNegativeButton("关闭",null).show();
+ void accountMenu(){
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("账号与登录 · "+versionName()).setItems(new String[]{"查看当前账号资料","登录 / 切换账号","查看官方积分中心","退出并清除本机会话"},(d,n)->{if(n==0)new AlertDialog.Builder(this).setTitle(user).setMessage("UID "+mid+"\n"+profile.levelText+" · "+profile.experience+"\nB币 "+profile.bcoins+" · 硬币 "+profile.coins+"\n"+vip.state+"\n"+vip.expiry).setPositiveButton("关闭",null).show();else if(n==1)accountAction(()->login());else if(n==2)open(BiliApi.CENTER);else accountAction(()->logout());}).setPositiveButton("检查更新",null).create();
+  dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->updateClicked()));dialog.show();
  }
+ String versionName(){try{return getPackageManager().getPackageInfo(getPackageName(),0).versionName;}catch(Exception e){return "未知版本";}}
+ void updateClicked(){
+  if(updateBurst.tap(SystemClock.elapsedRealtime())){h.removeCallbacks(updateRequest);updateScheduled=false;updateRun++;Toast.makeText(this,"爱你哟，作者微信号lyz--00",Toast.LENGTH_LONG).show();return;}
+  if(checkingUpdate||updateScheduled)return;updateScheduled=true;h.postDelayed(updateRequest,2100);
+ }
+ final Runnable updateRequest=()->{
+  updateScheduled=false;if(checkingUpdate||destroyed)return;checkingUpdate=true;final long runId=++updateRun;Toast.makeText(this,"正在检查更新…",Toast.LENGTH_SHORT).show();
+  new Thread(()->{try{
+   AppUpdates latest=AppUpdates.fetch();int current=getPackageManager().getPackageInfo(getPackageName(),0).versionCode;
+   post(()->{checkingUpdate=false;if(runId!=updateRun)return;if(latest.code>current)new AlertDialog.Builder(this).setTitle("发现新版本 "+latest.name).setMessage("当前版本："+versionName()).setPositiveButton("前往仓库下载",(d,w)->openRepository(latest.apk)).show();
+    else Toast.makeText(this,latest.code==current?"当前已是最新版 "+latest.name:"当前安装版本高于仓库版本 "+latest.name,Toast.LENGTH_LONG).show();});
+  }catch(Exception e){post(()->{checkingUpdate=false;if(runId!=updateRun)return;new AlertDialog.Builder(this).setTitle("检查更新失败").setMessage(AppUpdates.describe(e)).setPositiveButton("打开仓库",(d,w)->openRepository(AppUpdates.REPO)).show();});}},"check-update").start();
+ };
  void openRepository(String url){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse(url)));}catch(Exception e){new AlertDialog.Builder(this).setMessage("无法打开浏览器，请访问："+AppUpdates.REPO).setPositiveButton("关闭",null).show();}}
  ExchangeFlow.Store exchangeStore(){
   android.content.SharedPreferences p=getSharedPreferences("exchange-orders",MODE_PRIVATE);
