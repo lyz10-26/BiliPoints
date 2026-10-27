@@ -1,30 +1,25 @@
-# 大积分助手 · BiliPoints 0.4.4 beta
+# 大积分助手 · BiliPoints 0.4.5 beta
 
 针对B站大会员的安卓积分管理与任务辅助工具。开发者：π。Android 8.0及以上。
 
 ## 下载
 
-最新版本：[BiliPoints-0.4.4-beta.apk](BiliPoints-0.4.4-beta.apk)。安装包仍为测试版，尚未完成真机播放和真实积分到账验证。
+最新版本：[BiliPoints-0.4.5-beta.apk](BiliPoints-0.4.5-beta.apk)。这是测试版本，尚未完成真机兑换、播放和实际积分到账验收。
 
-| 版本 | APK |
-|---|---|
-| 0.4.4 beta | [下载](BiliPoints-0.4.4-beta.apk) |
-| 0.4.3 beta | [下载](BiliPoints-0.4.3-beta.apk) |
-| 0.4.2 beta | [下载](BiliPoints-0.4.2-beta.apk) |
-| 0.4.1 beta | [下载](BiliPoints-0.4.1-beta.apk) |
-| 0.4.0 beta | [下载](BiliPoints-0.4.0-beta.apk) |
-| 0.3.4 beta | [下载](BiliPoints-0.3.4-beta.apk) |
-| 0.3.3 beta | [下载](BiliPoints-0.3.3-beta.apk) |
-| 0.3.2 beta | [下载](BiliPoints-0.3.2-beta.apk) |
-| 0.3.1 beta | [下载](BiliPoints-0.3.1-beta.apk) |
-| 0.3.0 beta | [下载](BiliPoints-0.3.0-beta.apk) |
-| 0.2.1 beta | [下载](BiliPoints-0.2.1-beta.apk) |
-| 0.2.0 beta | [下载](BiliPoints-0.2.0-beta.apk) |
-| 0.1.2 beta | [下载](BiliPoints-0.1.2-beta.apk) |
-| 0.1.1 beta | [下载](BiliPoints-0.1.1-beta.apk) |
-| 0.1.0 beta | [下载](BiliPoints-0.1.0-beta.apk) |
+当前分支只保留本次安装包，旧版APK已从当前文件列表移除；Git历史不重写。校验值见 [SHA256SUMS](SHA256SUMS)，应用内更新读取 [latest.json](latest.json)。源码直接保存在本仓库，签名私钥和本地账号数据未上传。
 
-校验值见 [SHA256SUMS](SHA256SUMS)。源码直接保存在本仓库，签名私钥和本地账号数据未上传。
+## 0.4.5 本页兑换结果与仓库更新
+
+- “去兑换”不再跳到商品页面。先读取最新商品、资格及积分价，用户确认商品和实际积分后，只发送一次创建订单请求；本页显示真实兑换结果、官方拒绝原因及订单号。
+- 依据官方前端的 `sku/info`、`trade/order/verify`、`trade/order/create` 和 `trade/order/detail` 流程实现；只支持虚拟大会员权益，不自动处理收货地址、绑定手机、验证码或跳转支付。
+- 只有官方订单明确成功才显示成功。虚拟商品状态3仍为处理中，状态4为成功，状态5为失败并显示fail_reason；HTTP成功/请求code=0/余额变化不作为兑换成功证据。权益到账可能晚于订单成功，不宣称已延长会员。
+- 兑换订单按账号和商品保存待核验记录。创建请求超时、HTTP异常或响应格式变化时不重发；再次点击只核验已有订单。若没有取得订单号则提示先在官方已兑换商品核对，避免重复扣分。
+- 账号菜单内的版本中心接入本仓库latest.json，按version_code比较新旧，并提供仓库最新版下载入口；更新请求不携带B站Cookie。不恢复底部版本更新按钮，五连击彩蛋保留。
+- 发布0.4.5 beta（versionCode 16），沿用既有本地测试签名。新增兑换流程与更新地址测试，通过10组Java测试和1组JavaScript探针测试，完成编译/签名/对齐检查；没有使用真实账号扣积分做交易测试。
+
+官方流程依据：
+- https://s1.hdslb.com/bfs/static/jinkela/big-mobile/19.vip.04629c09eacfa5bc90a2c07c165454d5b5f52ff7.js
+- https://s1.hdslb.com/bfs/static/jinkela/big-mobile/9.vip.04629c09eacfa5bc90a2c07c165454d5b5f52ff7.js
 
 ## 0.4.4 积分兑换大会员
 
@@ -138,7 +133,7 @@
 
 ## 安装与使用
 
-安装 `BiliPoints-0.4.4-beta.apk`，保留前版测试签名，可覆盖安装。右上角「账号」进入B站官方登录页面，输入凭据或完成验证，返回助手后同步。密码不保存为本应用的明文字段，WebView会话存于本机应用数据区。
+安装 `BiliPoints-0.4.5-beta.apk`，保留前版测试签名，可覆盖安装。右上角「账号」进入B站官方登录页面，输入凭据或完成验证，返回助手后同步。密码不保存为本应用的明文字段，WebView会话存于本机应用数据区。
 
 - 「更新积分」：后台同步积分、会员状态和任务，并复核当前会话中已有的积分核验记录，不跳页。
 - 「一键执行并核验」：检查签到、接取适用的任务、在主页后方加载官方浏览页面、提交对应任务完成请求、查询任务状态与新增积分流水。

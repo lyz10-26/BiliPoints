@@ -19,6 +19,11 @@ public class BiliApi {
  public JSONObject combine()throws Exception{return get("/x/vip_point/task/combine?csrf="+enc(csrf)+"");}
  public EpisodeChoice latestFanren()throws Exception{return EpisodeChoice.latest(get("/pgc/view/web/season?season_id="+EpisodeChoice.SEASON),System.currentTimeMillis());}
 
+ public boolean sameSession(BiliApi other){return other!=null&&authenticated()&&other.authenticated()&&value(cookie,"SESSDATA").equals(value(other.cookie,"SESSDATA"));}
+ public JSONObject exchangeInfo(String token)throws Exception{return get("/x/vip_point/sku/info?token="+enc(token));}
+ public JSONObject verifyExchange(String token,String price)throws Exception{return form("/x/vip_point/trade/order/verify","token="+enc(token)+"&price="+enc(price)+"&csrf="+enc(csrf));}
+ public JSONObject createExchange(String token,String price)throws Exception{return form("/x/vip_point/trade/order/create","token="+enc(token)+"&price="+enc(price)+"&csrf="+enc(csrf));}
+ public JSONObject exchangeOrder(String order)throws Exception{return get("/x/vip_point/trade/order/detail?order_no="+enc(order));}
  public JSONObject exchangeSkus(int page)throws Exception{return get("/x/vip_point/sku/list?pn="+page+"&ps=20&in_review=0");}
  public JSONObject records()throws Exception{return get("/x/vip_point/list?change_type=1&pn=1&ps=50");}
  public JSONObject completeBrowse(TaskItem t)throws Exception {String kind=t.browseKind();if(t.purchase())throw new Exception("消费任务不能自动执行");if(kind.equals("animatetab")||kind.equals("filmtab"))return browseDone(kind);if(kind.equals("dressview"))return form("/pgc/activity/score/task/complete/v2",taskBody(t.code));if(kind.equals("vipmallview")){JSONObject body=new JSONObject();body.put("csrf",csrf);body.put("eventId","hevent_oy4b7h3epeb");return call("https://show.bilibili.com/api/activity/fire/common/event/dispatch",body.toString(),true);}throw new Exception("此类任务暂不支持自动完成");}
@@ -44,12 +49,12 @@ public class BiliApi {
   c.setRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/126.0.0.0 Mobile Safari/537.36 BiliApp/"+CLIENT_BUILD+" mobi_app/android build/"+CLIENT_BUILD);
   try{
    if(body!=null){c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Content-Type",json?"application/json; charset=utf-8":"application/x-www-form-urlencoded; charset=utf-8");try(OutputStream os=c.getOutputStream()){os.write(body.getBytes("UTF-8"));}}
-   int status=c.getResponseCode();if(status!=200)throw new ApiError(status,"网络或风控响应 HTTP "+status+"；请到官方页面核验");
+   int status=c.getResponseCode();if(status!=200)throw new ApiError(status,"网络或风控响应 HTTP "+status+"；请到官方页面核验",false);
    StringBuilder b=new StringBuilder();try(BufferedReader r=new BufferedReader(new InputStreamReader(c.getInputStream(),"UTF-8"))){String s;while((s=r.readLine())!=null){b.append(s);if(b.length()>2000000)throw new Exception("响应超出限制");}}
    JSONObject response=new JSONObject(b.toString());int code=response.optInt("code",-999);if(code!=0)throw new ApiError(code,operation(path)+"："+response.optString("message","服务端拒绝请求"));
    return response;
   }finally{c.disconnect();}
  }
- static String operation(String p){if(p.contains("receive/v2"))return "领取任务失败";if(p.contains("complete"))return "任务上报失败";if(p.contains("sign2"))return "签到失败";return "同步失败";}
- public static class ApiError extends Exception {public final int code;ApiError(int c,String s){super("["+c+"] "+s);code=c;}}
+ static String operation(String p){if(p.contains("/trade/order/create"))return "兑换请求被拒绝";if(p.contains("/trade/order/verify"))return "兑换资格核验失败";if(p.contains("/trade/order/detail"))return "兑换订单查询失败";if(p.contains("receive/v2"))return "领取任务失败";if(p.contains("complete"))return "任务上报失败";if(p.contains("sign2"))return "签到失败";return "同步失败";}
+ public static class ApiError extends Exception {public final int code;public final boolean confirmedRejection;ApiError(int c,String s){this(c,s,true);}ApiError(int c,String s,boolean definite){super("["+c+"] "+s);code=c;confirmedRejection=definite;}}
 }
