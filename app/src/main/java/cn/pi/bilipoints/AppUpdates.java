@@ -7,6 +7,10 @@ public final class AppUpdates {
  public static final String API_INDEX="https://api.github.com/repos/lyz10-26/BiliPoints/contents/latest.json?ref=main";
  public final int code;public final String name,apk;
  public interface Source {String read(String url)throws Exception;}
+ public static class HttpFailure extends IOException {public final int status;public HttpFailure(int code,String message){super(message);status=code;}}
+ public static class AccessRequired extends IOException {AccessRequired(){super("GitHub返回404：私有仓库未登录或账号无访问权限时，也会返回此状态；不能据此认定更新文件不存在。请登录有权限的GitHub账号后到仓库查看最新版。");}}
+ public String statusText(int installed){return code==installed?"已经是最新版":code>installed?"发现新版本 "+name:"当前安装版本高于仓库版本 "+name;}
+
  public AppUpdates(JSONObject j)throws Exception{
   code=j.getInt("version_code");name=j.getString("version_name");apk=j.getString("apk_url");
   if(code<=0||name.isEmpty()||!apk.matches("https://github\\.com/lyz10-26/BiliPoints/raw/refs/heads/main/BiliPoints-[A-Za-z0-9.\\-]+\\.apk"))throw new IOException("更新数据或下载地址不合法");
@@ -25,14 +29,14 @@ public final class AppUpdates {
  public static AppUpdates fetch(Source source)throws Exception{
   Exception first;
   try{return parse(source.read(INDEX));}catch(Exception e){first=e;}
-  try{return parse(source.read(API_INDEX));}catch(Exception e){throw new IOException("主更新源："+describe(first)+"\n备用更新源："+describe(e)+"\n可打开仓库手动下载。",e);}
+  try{return parse(source.read(API_INDEX));}catch(Exception e){if(first instanceof HttpFailure&&e instanceof HttpFailure&&((HttpFailure)first).status==404&&((HttpFailure)e).status==404)throw new AccessRequired();throw new IOException("主更新源："+describe(first)+"\n备用更新源："+describe(e)+"\n可打开仓库手动下载。",e);}
  }
  static String read(String url)throws Exception{
   HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection();c.setConnectTimeout(7000);c.setReadTimeout(8000);c.setInstanceFollowRedirects(false);c.setUseCaches(false);
   c.setRequestProperty("Accept","application/vnd.github+json");c.setRequestProperty("User-Agent","BiliPoints-Update");
   try{
    int status=c.getResponseCode();
-   if(status!=200)throw new IOException(status==403?"HTTP 403：访问被拒绝或API限流":status==404?"HTTP 404：仓库更新文件不存在":status==429?"HTTP 429：请求过于频繁":status>=300&&status<400?"HTTP "+status+"：更新源发生重定向":"HTTP "+status+"：更新源响应异常");
+   if(status!=200)throw new HttpFailure(status,status==403?"HTTP 403：访问被拒绝或API限流":status==404?"HTTP 404：更新资源不存在或当前无访问权限":status==429?"HTTP 429：请求过于频繁":status>=300&&status<400?"HTTP "+status+"：更新源发生重定向":"HTTP "+status+"：更新源响应异常");
    ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[2048];int n;while((n=in.read(b))!=-1){if(out.size()+n>32768)throw new IOException("更新数据过大");out.write(b,0,n);}}
    return new String(out.toByteArray(),"UTF-8");
   }finally{c.disconnect();}

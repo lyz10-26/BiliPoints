@@ -11,6 +11,10 @@ public class AppUpdatesTest {
   count[0]=0;AppUpdates.fetch(url->{count[0]++;return manifest;});if(count[0]!=1)throw new AssertionError("healthy primary must not issue extra requests");
   boolean failed=false;try{AppUpdates.fetch(url->{throw new java.net.UnknownHostException();});}catch(Exception e){failed=e.getMessage().contains("主更新源")&&e.getMessage().contains("备用更新源")&&e.getMessage().contains("域名解析");}if(!failed)throw new AssertionError("both endpoint failures retain diagnostic causes");
   if(!AppUpdates.describe(new java.net.SocketTimeoutException()).contains("超时"))throw new AssertionError();
+  if(!a.statusText(16).equals("已经是最新版"))throw new AssertionError("equal versions show exact latest wording");
+  if(a.statusText(15).equals("已经是最新版")||a.statusText(17).equals("已经是最新版"))throw new AssertionError("different versions cannot be marked current");
+  boolean access=false;try{AppUpdates.fetch(url->{throw new AppUpdates.HttpFailure(404,"not found");});}catch(AppUpdates.AccessRequired e){access=e.getMessage().contains("私有仓库")&&e.getMessage().contains("不能据此认定");}if(!access)throw new AssertionError("private resource 404 must not be misreported as a missing file or latest version");
+  AppUpdates release=new AppUpdates(new JSONObject("{\"version_code\":18,\"version_name\":\"1.0-release\",\"apk_url\":\"https://github.com/lyz10-26/BiliPoints/raw/refs/heads/main/BiliPoints-1.0-release.apk\"}"));if(release.code!=18)throw new AssertionError();
   System.out.println("PASS: update version fields and repository-only APK URLs");
  }
 }

@@ -1,12 +1,22 @@
-# 大积分助手 · BiliPoints 0.4.6 beta
+# 大积分助手 · BiliPoints 1.0 release
 
 针对B站大会员的安卓积分管理与任务辅助工具。开发者：π。Android 8.0及以上。
 
 ## 下载
 
-最新版本：[BiliPoints-0.4.6-beta.apk](BiliPoints-0.4.6-beta.apk)。这是测试版本，尚未完成真机兑换、播放和实际积分到账验收。
+最新版本：[BiliPoints-1.0-release.apk](BiliPoints-1.0-release.apk)。版本名称按要求改为1.0 release；尚未完成真机兑换、播放和实际积分到账验收。
 
 当前分支只保留本次安装包，旧版APK已从当前文件列表移除；Git历史不重写。校验值见 [SHA256SUMS](SHA256SUMS)，应用内更新读取 [latest.json](latest.json)。源码直接保存在本仓库，签名私钥和本地账号数据未上传。
+
+## 1.0 release 更新404原因定位
+
+- 版本名称改为1.0-release，versionCode提高为18，沿用原签名，支持从0.4.6覆盖安装。release为版本名称，不代表新增真机业务验收。
+- 已通过仓库元数据确认BiliPoints目前为private，认证连接可读到main/latest.json；App的Raw和Contents API均为匿名请求，GitHub以404隐藏私有资源，因此截图中的404不能认定是文件缺失。增加第二个匿名域名无法解决访问权限问题。
+- 双源均返回404时显示仓库访问权限提示，并提供登录仓库查看入口；不把权限失败显示为已是最新版，也不在APK内嵌GitHub令牌。已按用户要求将仓库改为public，匿名更新检查和下载不再需要GitHub登录；保留404权限/路径异常提示。
+- 成功读取更新清单且version_code与安装版本完全相等时，精确显示“已经是最新版”；远端较新、安装版高于远端、网络/格式/权限错误均分别处理。
+- 保留2秒内五次点击彩蛋、单一更新按钮、开售时间、兑换核验和播放行为。通过11组Java与1组JavaScript回归测试，以及APK编译、v2/v3签名、对齐检查；未进行真实账号交易测试。
+
+GitHub官方说明：https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api#404-not-found-for-an-existing-resource
 
 ## 0.4.6 开售时间与更新交互精简
 
@@ -143,7 +153,7 @@
 
 ## 安装与使用
 
-安装 `BiliPoints-0.4.6-beta.apk`，保留前版测试签名，可覆盖安装。右上角「账号」进入B站官方登录页面，输入凭据或完成验证，返回助手后同步。密码不保存为本应用的明文字段，WebView会话存于本机应用数据区。
+安装 `BiliPoints-1.0-release.apk`，保留前版测试签名，可覆盖安装。右上角「账号」进入B站官方登录页面，输入凭据或完成验证，返回助手后同步。密码不保存为本应用的明文字段，WebView会话存于本机应用数据区。
 
 - 「更新积分」：后台同步积分、会员状态和任务，并复核当前会话中已有的积分核验记录，不跳页。
 - 「一键执行并核验」：检查签到、接取适用的任务、在主页后方加载官方浏览页面、提交对应任务完成请求、查询任务状态与新增积分流水。
