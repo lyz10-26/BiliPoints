@@ -22,18 +22,17 @@ public class MainActivity extends Activity {
   buildExchange();
   LinearLayout actions=card();TextView actionTitle=text("今日执行",16,INK);actionTitle.setTypeface(null,Typeface.BOLD);actions.addView(actionTitle);summary=text("执行结果将在这里汇总",12,MUTED);actions.addView(summary);run=button("一键执行并核验",true);actions.addView(run,new LinearLayout.LayoutParams(-1,dp(44)));run.setOnClickListener(v->startAssist());LinearLayout ar=new LinearLayout(this);refresh=button("更新积分",false);claim=button("领取待领积分",false);pair(ar,refresh);pair(ar,claim);actions.addView(ar);refresh.setOnClickListener(v->refresh());claim.setOnClickListener(v->claimAll());cancel=button("停止执行",false);LinearLayout.LayoutParams stopLayout=new LinearLayout.LayoutParams(-1,dp(44));stopLayout.setMargins(dp(3),dp(10),dp(3),dp(8));actions.addView(cancel,stopLayout);cancel.setVisibility(View.GONE);cancel.setOnClickListener(v->stop());executionLabel=text("执行进度 0%",12,MUTED);actions.addView(executionLabel);executionBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);executionBar.setMax(100);executionBar.setProgressTintList(android.content.res.ColorStateList.valueOf(PINK));actions.addView(executionBar,new LinearLayout.LayoutParams(-1,dp(4)));notice=text("更新与执行均在本页完成",11,MUTED);notice.setMaxLines(2);actions.addView(notice);
   LinearLayout video=card();LinearLayout vr=new LinearLayout(this);vr.setGravity(Gravity.CENTER_VERTICAL);watchTitle=text("观看剧集领积分",15,INK);watchTitle.setTypeface(null,Typeface.BOLD);vr.addView(watchTitle,new LinearLayout.LayoutParams(0,-2,1));watchState=text("待同步",11,PINK);vr.addView(watchState);video.addView(vr);watchHint=text("默认观看：凡人修仙传最新正片",12,MUTED);watchHint.setMaxLines(2);video.addView(watchHint);video.addView(text("隐藏静音播放 · 只统计实际播放进度 · 0.3.3网页播放模式 · 实际播放计时",11,MUTED));watchButton=button("开始隐藏播放最新一集",false);video.addView(watchButton,new LinearLayout.LayoutParams(-1,dp(44)));watchButton.setOnClickListener(v->watchLatest());
-  deadline=text("",11,MUTED);deadline.setPadding(0,dp(10),0,dp(3));content.addView(deadline);tasks=col();content.addView(tasks);drawTasks();LinearLayout logs=card();logs.addView(text("执行详情",15,INK));logView=text("暂无记录",12,MUTED);logView.setMaxLines(2);logs.addView(logView);Button more=button("展开 / 收起",false);logs.addView(more);more.setOnClickListener(v->logView.setMaxLines(logView.getMaxLines()==2?100:2));TextView foot=text("© "+Calendar.getInstance().get(Calendar.YEAR)+" 开发者 π · Powered by GPT\n构建模型：GPT-6（精确子型号未提供）\n非哔哩哔哩官方应用 · v1.0 release\nBilibili相关商标与内容归各自权利人所有",11,MUTED);foot.setPadding(dp(6),dp(16),dp(6),dp(4));foot.setGravity(Gravity.CENTER);content.addView(foot);
+  deadline=text("",11,MUTED);deadline.setPadding(0,dp(10),0,dp(3));content.addView(deadline);tasks=col();content.addView(tasks);drawTasks();LinearLayout logs=card();logs.addView(text("执行详情",15,INK));logView=text("暂无记录",12,MUTED);logView.setMaxLines(2);logs.addView(logView);Button more=button("展开 / 收起",false);logs.addView(more);more.setOnClickListener(v->logView.setMaxLines(logView.getMaxLines()==2?100:2));TextView foot=text("© "+Calendar.getInstance().get(Calendar.YEAR)+" 开发者 π · Powered by GPT\n构建模型：GPT-6（精确子型号未提供）\n非哔哩哔哩官方应用 · v1.0.1 release\nBilibili相关商标与内容归各自权利人所有",11,MUTED);foot.setPadding(dp(6),dp(16),dp(6),dp(4));foot.setGravity(Gravity.CENTER);content.addView(foot);
  }
  void buildExchange(){
   LinearLayout c=card();LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);
   TextView title=text("积分兑换大会员",16,INK);title.setTypeface(null,Typeface.BOLD);head.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-  exchangeRefresh=button("刷新商品",false);head.addView(exchangeRefresh,new LinearLayout.LayoutParams(dp(84),dp(36)));exchangeRefresh.setOnClickListener(v->execute((a,id)->loadExchange(a,id)));c.addView(head);
+  exchangeRefresh=button("刷新商品",false);head.addView(exchangeRefresh,new LinearLayout.LayoutParams(dp(82),dp(44)));exchangeRefresh.setOnClickListener(v->execute((a,id)->loadExchange(a,id)));c.addView(head);
   exchangeBalance=text("可用大积分 —",12,PINK);c.addView(exchangeBalance);
-  exchangeStatus=text(exchangeMessage,11,MUTED);exchangeStatus.setMaxLines(3);c.addView(exchangeStatus);
-  exchangeResult=text("",12,INK);exchangeResult.setVisibility(View.GONE);c.addView(exchangeResult);
+  exchangeStatus=text(exchangeMessage,11,MUTED);exchangeStatus.setMaxLines(2);c.addView(exchangeStatus);
+  exchangeResult=text("",12,INK);exchangeResult.setPadding(dp(10),dp(8),dp(10),dp(8));exchangeResult.setBackground(bg(0xFFF7F6FA,12));exchangeResult.setVisibility(View.GONE);LinearLayout.LayoutParams resultLayout=new LinearLayout.LayoutParams(-1,-2);resultLayout.setMargins(0,dp(8),0,dp(2));c.addView(exchangeResult,resultLayout);
   exchangeGrid=col();c.addView(exchangeGrid);
-  Button mall=button("查看官方积分商城",false);LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(-1,dp(42));mp.topMargin=dp(10);c.addView(mall,mp);mall.setOnClickListener(v->open(ExchangeSku.MALL));
-  c.addView(text("兑换前确认商品及积分，结果以官方订单为准",10,MUTED));
+  TextView rules=text("兑换结果以官方订单为准",10,MUTED);rules.setPadding(dp(3),dp(10),dp(3),0);c.addView(rules);
  }
  void loadExchange(BiliApi a,long id)throws Exception{
   post(()->exchangeStatus.setText("正在同步官方兑换商品…"));
@@ -59,17 +58,28 @@ public class MainActivity extends Activity {
   if(exchangeGrid==null)return;exchangeBalance.setText("可用大积分 "+(points<0?"—":String.valueOf(points)));exchangeStatus.setText(exchangeMessage);exchangeGrid.removeAllViews();exchangeResult.setText(exchangeResultText);exchangeResult.setVisibility(exchangeResultText.isEmpty()?View.GONE:View.VISIBLE);
   LinearLayout row=null;
   for(int n=0;n<exchangeItems.size();n++){
-   ExchangeSku s=exchangeItems.get(n);if(n%2==0){row=new LinearLayout(this);row.setBaselineAligned(false);exchangeGrid.addView(row);}
-   LinearLayout tile=col();tile.setPadding(dp(8),dp(8),dp(8),dp(10));tile.setBackground(bg(0xFFFFF7FA,14));LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,-2,1);tp.setMargins(dp(3),dp(6),dp(3),0);row.addView(tile,tp);
-   ImageView picture=new ImageView(this);picture.setScaleType(ImageView.ScaleType.FIT_CENTER);picture.setBackground(bg(0xFFFFEAF1,10));picture.setClipToOutline(true);picture.setContentDescription(s.title+"官方商品图");tile.addView(picture,new LinearLayout.LayoutParams(-1,dp(116)));images.load(s.picture,picture,null);
-   TextView name=text("",13,INK);name.setText(s.title);name.setMaxLines(2);name.setMinLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setTypeface(null,Typeface.BOLD);tile.addView(name);
-   String sale=s.saleInfo(System.currentTimeMillis());String label=!sale.isEmpty()?sale:(!s.promotion.isEmpty()?s.promotion+" ":"")+s.restriction;
-   TextView tags=text("",10,MUTED);tags.setText(label);tags.setMinLines(1);tags.setMaxLines(4);tile.addView(tags);
-   TextView price=text("",18,PINK);price.setText(s.price.isEmpty()?"积分见详情":s.price+" 大积分");price.setTypeface(null,Typeface.BOLD);tile.addView(price);
-   if(!s.origin.isEmpty()&&!s.price.equals(s.origin)){TextView old=text(s.origin+" 大积分",10,MUTED);old.setPaintFlags(old.getPaintFlags()|android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);tile.addView(old);}
-   Button detail=button(s.soldOut?"已售罄":s.temporarySoldOut?"暂兑完":"去兑换",!s.soldOut&&!s.temporarySoldOut);LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,dp(38));bp.topMargin=dp(6);tile.addView(detail,bp);if(!exchangeStore().get(mid+":"+s.token).isEmpty())detail.setText("核验上次兑换");detail.setOnClickListener(v->exchangeClicked(s));picture.setOnClickListener(v->exchangeClicked(s));
+   ExchangeSku sku=exchangeItems.get(n);
+   if(n%2==0){row=new LinearLayout(this);row.setBaselineAligned(false);row.setGravity(Gravity.TOP);exchangeGrid.addView(row,new LinearLayout.LayoutParams(-1,-2));}
+   LinearLayout tile=col();tile.setPadding(dp(9),dp(9),dp(9),dp(10));tile.setBackground(bg(0xFFFFF7FA,16));
+   // The horizontal row gives both cards its maximum measured height. A flexible spacer
+   // absorbs different title/schedule heights so every footer and action shares a baseline.
+   LinearLayout.LayoutParams tileLayout=new LinearLayout.LayoutParams(0,-1,1);tileLayout.setMargins(dp(3),dp(8),dp(3),0);row.addView(tile,tileLayout);
+   ImageView picture=new ImageView(this);picture.setScaleType(ImageView.ScaleType.FIT_CENTER);picture.setBackground(bg(0xFFFFEAF1,12));picture.setClipToOutline(true);picture.setContentDescription(sku.title+"官方商品图");tile.addView(picture,new LinearLayout.LayoutParams(-1,dp(112)));images.load(sku.picture,picture,null);
+   TextView name=text("",13,INK);name.setText(sku.title);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setTypeface(null,Typeface.BOLD);name.setPadding(0,dp(8),0,dp(3));tile.addView(name);
+   String sale=sku.saleInfo(System.currentTimeMillis());String label=!sale.isEmpty()?sale:(!sku.promotion.isEmpty()?sku.promotion+" ":"")+sku.restriction;
+   label=label.replace("暂兑完 · ","暂兑完\n").replace("已售罄 · ","已售罄\n");
+   TextView tags=text("",10,MUTED);tags.setText(label);tags.setMaxLines(4);tags.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(tags);
+   tile.addView(new View(this),new LinearLayout.LayoutParams(1,0,1));
+   LinearLayout footer=col();LinearLayout.LayoutParams footerLayout=new LinearLayout.LayoutParams(-1,-2);footerLayout.topMargin=dp(8);tile.addView(footer,footerLayout);
+   TextView price=text("",18,PINK);String priceText=sku.price.isEmpty()?"积分见详情":sku.price+" 大积分";
+   android.text.SpannableString amount=new android.text.SpannableString(priceText);if(!sku.price.isEmpty())amount.setSpan(new android.text.style.RelativeSizeSpan(.62f),sku.price.length(),priceText.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   price.setText(amount);price.setSingleLine(true);price.setAutoSizeTextTypeUniformWithConfiguration(12,18,1,android.util.TypedValue.COMPLEX_UNIT_SP);price.setTypeface(null,Typeface.BOLD);footer.addView(price,new LinearLayout.LayoutParams(-1,dp(28)));
+   boolean reserveOriginal=false;for(int peer=n-n%2;peer<Math.min(n-n%2+2,exchangeItems.size());peer++){ExchangeSku other=exchangeItems.get(peer);if(!other.origin.isEmpty()&&!other.price.equals(other.origin))reserveOriginal=true;}
+   TextView old=text("",10,MUTED);old.setSingleLine(true);old.setText(sku.origin+" 大积分");old.setPaintFlags(old.getPaintFlags()|android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);old.setVisibility(!reserveOriginal?View.GONE:!sku.origin.isEmpty()&&!sku.price.equals(sku.origin)?View.VISIBLE:View.INVISIBLE);footer.addView(old,new LinearLayout.LayoutParams(-1,dp(16)));
+   Button action=button(sku.soldOut?"已售罄":sku.temporarySoldOut?"暂兑完":"去兑换",!sku.soldOut&&!sku.temporarySoldOut);action.setSingleLine(true);action.setAutoSizeTextTypeUniformWithConfiguration(10,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);
+   if(!exchangeStore().get(mid+":"+sku.token).isEmpty())action.setText("核验上次兑换");LinearLayout.LayoutParams actionLayout=new LinearLayout.LayoutParams(-1,dp(44));actionLayout.topMargin=dp(7);footer.addView(action,actionLayout);action.setOnClickListener(v->exchangeClicked(sku));picture.setOnClickListener(v->exchangeClicked(sku));
   }
-  if(row!=null&&exchangeItems.size()%2==1)row.addView(new View(this),new LinearLayout.LayoutParams(0,1,1));
+  if(row!=null&&exchangeItems.size()%2==1){LinearLayout.LayoutParams empty=new LinearLayout.LayoutParams(0,1,1);empty.setMargins(dp(3),dp(8),dp(3),0);row.addView(new View(this),empty);}
  }
  void pinkGradient(TextView v){v.post(()->{float width=Math.max(1,v.getPaint().measureText(v.getText().toString()));v.getPaint().setShader(new android.graphics.LinearGradient(0,0,width,0,new int[]{0xFFFF82B3,0xFFE63B83},null,android.graphics.Shader.TileMode.CLAMP));v.invalidate();});}
  void accountMenu(){

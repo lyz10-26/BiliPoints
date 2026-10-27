@@ -24,6 +24,6 @@ PY
 if [ ! -f "$build/test-signing.jks" ]; then
  keytool -genkeypair -keystore "$build/test-signing.jks" -storepass android -keypass android -alias beta -keyalg RSA -keysize 2048 -validity 3650 -dname "CN=BiliPoints Local Test" >/dev/null 2>&1
 fi
-"$toolchain/android-15/apksigner" sign --ks "$build/test-signing.jks" --ks-pass pass:android --out "$out/BiliPoints-1.0-release.apk" "$build/aligned.apk"
-"$toolchain/android-15/apksigner" verify --verbose "$out/BiliPoints-1.0-release.apk"
-"$toolchain/android-15/zipalign" -c 4 "$out/BiliPoints-1.0-release.apk"
+"$toolchain/android-15/apksigner" sign --ks "$build/test-signing.jks" --ks-pass pass:android --out "$out/BiliPoints-1.0.1-release.apk" "$build/aligned.apk"
+"$toolchain/android-15/apksigner" verify --verbose "$out/BiliPoints-1.0.1-release.apk"
+"$toolchain/android-15/zipalign" -c 4 "$out/BiliPoints-1.0.1-release.apk"

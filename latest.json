@@ -1,7 +1,7 @@
 {
-  "version_code": 18,
-  "version_name": "1.0-release",
-  "apk_url": "https://github.com/lyz10-26/BiliPoints/raw/refs/heads/main/BiliPoints-1.0-release.apk",
+  "version_code": 19,
+  "version_name": "1.0.1-release",
+  "apk_url": "https://github.com/lyz10-26/BiliPoints/raw/refs/heads/main/BiliPoints-1.0.1-release.apk",
   "repository_url": "https://github.com/lyz10-26/BiliPoints",
-  "sha256": "6f8ffed72c0dee2773ef03650cdfd48d668d19a819544eb1823a8f71346766a9"
+  "sha256": "40047b16184b93b3960f35bb9967c420f3f75ed88971a47d969769df2b1bd94f"
 }
