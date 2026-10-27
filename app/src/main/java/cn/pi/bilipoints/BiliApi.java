@@ -17,7 +17,6 @@ public class BiliApi {
  public JSONObject form(String path,String body)throws Exception{return call(clientPath(path),body+"&"+clientQuery(),false);}
  public JSONObject json(String path,JSONObject body)throws Exception{return call(clientPath(path),body.toString(),true);}
  public JSONObject combine()throws Exception{return get("/x/vip_point/task/combine?csrf="+enc(csrf)+"");}
- public EpisodeChoice latestFanren()throws Exception{return EpisodeChoice.latest(get("/pgc/view/web/season?season_id="+EpisodeChoice.SEASON),System.currentTimeMillis());}
 
  public boolean sameSession(BiliApi other){return other!=null&&authenticated()&&other.authenticated()&&value(cookie,"SESSDATA").equals(value(other.cookie,"SESSDATA"));}
  public JSONObject exchangeInfo(String token)throws Exception{return get("/x/vip_point/sku/info?token="+enc(token));}
