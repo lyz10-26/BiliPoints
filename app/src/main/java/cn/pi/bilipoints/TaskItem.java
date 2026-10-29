@@ -21,6 +21,7 @@ public class TaskItem {
   if(t.contains("浏览装扮商城主页"))return "dressview";
   return "";
  }
+ public int browseSeconds(){return "dressview".equals(browseKind())?0:12;}
  public boolean browse(){return !browseKind().isEmpty();}
  public String label(){if(reward)return "领取积分";if(state==0)return "领取任务";if(state==1)return purchase()?"查看提醒":"去完成";if(state==3)return "已完成";return "官方核验";}
  public static ArrayList<TaskItem> parse(JSONObject data)throws JSONException {
