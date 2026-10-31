@@ -34,6 +34,7 @@ public final class ExchangeFlow {
   return new Offer(sku,p.optString("mid")+":"+token,notice.toString());
  }
  public static Result fromDetail(JSONObject root,String expected)throws JSONException{
+  if(root.has("code")&&root.optInt("code",-1)!=0)return waiting(expected,"官方订单查询未成功，尚未确认兑换结果");
   JSONObject d=data(root),o=d.optJSONObject("order");
   if(o==null||!expected.equals(o.optString("order_no")))return waiting(expected,"官方订单信息缺失或订单号不匹配，尚未确认兑换结果");
   int state=o.optInt("state",-1);JSONObject good=d.optJSONObject("good"),type=good==null?null:good.optJSONObject("good");int delivery=type==null?-1:type.optInt("delivery_type",-1);

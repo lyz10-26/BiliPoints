@@ -18,6 +18,7 @@ public class ExchangeFlowTest {
  }
  static JSONObject detail(String state,int type,String order)throws Exception{return j("{\"code\":0,\"data\":{\"order\":{\"order_no\":\""+order+"\",\"state\":"+state+"},\"good\":{\"good\":{\"delivery_type\":"+type+"}},\"fail_reason\":\"发放失败\"}}");}
  public static void main(String[] args)throws Exception{
+  ok(!ExchangeFlow.fromDetail(j("{\"code\":-101,\"data\":{\"order\":{\"order_no\":\"O\",\"state\":4}}}"),"O").terminal,"failed API response cannot confirm success");
   Api a=new Api();Memory store=new Memory();ExchangeFlow.Offer offer=ExchangeFlow.prepare(a,"vip1");ok(offer.sku.price.equals("2500"),"fresh price shown before consent");ok(a.creates==0,"preparation cannot spend");
   ExchangeFlow.Result success=ExchangeFlow.redeem(a,offer,store);ok(success.state.equals("兑换成功")&&success.terminal&&a.creates==1&&store.get(offer.key).isEmpty(),"only terminal official success completes");
   ok(!ExchangeFlow.fromDetail(detail("3",1,"O"),"O").terminal,"state3 virtual delivery is still processing");ok(ExchangeFlow.fromDetail(detail("3",4,"O"),"O").terminal,"official physical packing rule");

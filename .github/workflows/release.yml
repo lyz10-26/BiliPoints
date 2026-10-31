@@ -1,0 +1,38 @@
+name: Publish verified APK
+on:
+  push:
+    branches: [main]
+    paths: [latest.json]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release manifest and APK checksum
+        id: release
+        shell: python
+        run: |
+          import hashlib, json, os, pathlib, re, zipfile
+          meta = json.loads(pathlib.Path('latest.json').read_text())
+          version = meta['version_name']
+          assert re.fullmatch(r'\d+\.\d+\.\d+-release', version)
+          name = 'BiliPoints-' + version + '.apk'
+          apk = pathlib.Path(name)
+          assert hashlib.sha256(apk.read_bytes()).hexdigest() == meta['sha256']
+          with zipfile.ZipFile(apk) as archive:
+            assert {'AndroidManifest.xml', 'classes.dex'} <= set(archive.namelist())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write('tag=v' + version + '\napk=' + name + '\nversion=' + version + '\n')
+      - name: Publish release with APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_APK: ${{ steps.release.outputs.apk }}
+        run: gh release create "$RELEASE_TAG" "$RELEASE_APK" SHA256SUMS --target "$GITHUB_SHA" --title "$RELEASE_VERSION" --notes-file RELEASE_NOTES.md --latest

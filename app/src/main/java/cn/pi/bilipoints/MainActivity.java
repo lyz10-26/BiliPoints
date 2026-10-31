@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
 
   LinearLayout actions=card();TextView actionTitle=text("任务执行",16,INK);actionTitle.setTypeface(null,Typeface.BOLD);actions.addView(actionTitle);summary=text("独立浏览任务最多 3 项并行，结果逐项核验",12,MUTED);actions.addView(summary);run=button("一键执行 · 并行核验",true);actions.addView(run,new LinearLayout.LayoutParams(-1,dp(44)));run.setOnClickListener(v->startAssist());LinearLayout ar=new LinearLayout(this);refresh=button("更新积分",false);claim=button("领取待领积分",false);pair(ar,refresh);pair(ar,claim);actions.addView(ar);refresh.setOnClickListener(v->refresh());claim.setOnClickListener(v->claimAll());cancel=button("停止执行",false);LinearLayout.LayoutParams stopLayout=new LinearLayout.LayoutParams(-1,dp(44));stopLayout.setMargins(dp(3),dp(10),dp(3),dp(8));actions.addView(cancel,stopLayout);cancel.setVisibility(View.GONE);cancel.setOnClickListener(v->stop());executionLabel=text("执行进度 0%",12,MUTED);actions.addView(executionLabel);executionBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);executionBar.setMax(100);executionBar.setProgressTintList(android.content.res.ColorStateList.valueOf(PINK));actions.addView(executionBar,new LinearLayout.LayoutParams(-1,dp(4)));notice=text("最多 3 项浏览并行 · 同类任务按顺序处理",11,MUTED);notice.setMaxLines(2);actions.addView(notice);
   LinearLayout logs=card();logs.addView(text("执行详情",15,INK));logView=text("暂无记录",12,MUTED);logView.setMaxLines(2);logs.addView(logView);Button more=button("展开 / 收起",false);logs.addView(more);more.setOnClickListener(v->logView.setMaxLines(logView.getMaxLines()==2?100:2));
-  deadline=text("",11,MUTED);deadline.setPadding(0,dp(10),0,dp(3));content.addView(deadline);tasks=col();content.addView(tasks);drawTasks();buildExchange();TextView foot=text("© "+Calendar.getInstance().get(Calendar.YEAR)+" 开发者 π · Powered by GPT\n非哔哩哔哩官方应用 · v1.1.2 release\nBilibili相关商标与内容归各自权利人所有",11,MUTED);foot.setPadding(dp(6),dp(16),dp(6),dp(4));foot.setGravity(Gravity.CENTER);content.addView(foot);
+  deadline=text("",11,MUTED);deadline.setPadding(0,dp(10),0,dp(3));content.addView(deadline);tasks=col();content.addView(tasks);drawTasks();buildExchange();TextView foot=text("© "+Calendar.getInstance().get(Calendar.YEAR)+" 开发者 π · Powered by GPT\n非哔哩哔哩官方应用 · v1.1.3 release\nBilibili相关商标与内容归各自权利人所有",11,MUTED);foot.setPadding(dp(6),dp(16),dp(6),dp(4));foot.setGravity(Gravity.CENTER);content.addView(foot);
  }
  void buildExchange(){
   LinearLayout c=card();LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);
@@ -37,18 +37,8 @@ public class MainActivity extends Activity {
  void loadExchange(BiliApi a,long id)throws Exception{
   post(()->exchangeStatus.setText("正在同步官方兑换商品…"));
   try{
-   ArrayList<ExchangeSku> all=new ArrayList<>();HashSet<String> seen=new HashSet<>();boolean more=false;int count=0;
-   for(int page=1;page<=5;page++){
-    check(id);JSONObject d=data(a.exchangeSkus(page));JSONArray skus=d.optJSONArray("skus");if(skus==null)throw new JSONException("官方兑换商品列表格式变化");
-    for(ExchangeSku s:ExchangeSku.parse(d))if(seen.add(s.token))all.add(s);
-    count+=skus.length();JSONObject pagination=d.optJSONObject("page");int total=pagination==null?-1:pagination.optInt("total",-1);
-    more=skus.length()>=20&&(total<0||count<total);if(!more)break;
-   }
-   int lookedUp=0;
-   for(int n=0;n<all.size()&&lookedUp<10;n++){
-    ExchangeSku sku=all.get(n);if((sku.temporarySoldOut||sku.soldOut)&&sku.nextSoldAt==0){lookedUp++;check(id);try{JSONObject full=data(a.exchangeInfo(sku.token));if(sku.token.equals(full.optString("token")))all.set(n,sku.withInventory(full));}catch(Exception e){if(e instanceof BiliApi.ApiError&&((BiliApi.ApiError)e).code==-101)throw e;}}
-   }
-   check(id);final String message=(all.isEmpty()?"本次未获取到大会员兑换商品，可前往官方商城查看": "商品信息已同步 · 兑换结果在本页显示")+(more?"；已扫描前100项，更多见官方商城":"");
+   ExchangeCatalog catalog=ExchangeCatalog.load(a,()->check(id));ArrayList<ExchangeSku> all=catalog.items;
+   final String message=(all.isEmpty()?"官方当前未返回大会员兑换商品":"已同步官方会员卡 · "+all.size()+"项 · "+new SimpleDateFormat("HH:mm:ss",Locale.CHINA).format(new Date()))+(catalog.detailFailures>0?"；部分详情未获取，请刷新重试":"");
    post(()->{exchangeItems=all;exchangeMessage=message;drawExchange();});
   }catch(Exception e){check(id);if(e instanceof BiliApi.ApiError&&((BiliApi.ApiError)e).code==-101)throw e;
    post(()->{exchangeItems.clear();exchangeMessage="兑换商品同步失败："+safeError(e)+"。可前往官方商城查看";drawExchange();});
@@ -68,7 +58,7 @@ public class MainActivity extends Activity {
    TextView name=text("",13,INK);name.setText(sku.title);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setTypeface(null,Typeface.BOLD);name.setPadding(0,dp(8),0,dp(3));tile.addView(name);
    String sale=sku.saleInfo(System.currentTimeMillis());String label=!sale.isEmpty()?sale:(!sku.promotion.isEmpty()?sku.promotion+" ":"")+sku.restriction;
    label=label.replace("暂兑完 · ","暂兑完\n").replace("已售罄 · ","已售罄\n");
-   TextView tags=text("",10,MUTED);tags.setText(label);tags.setMaxLines(4);tags.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(tags);
+   TextView tags=text("",10,MUTED);tags.setText(label);tile.addView(tags);
    tile.addView(new View(this),new LinearLayout.LayoutParams(1,0,1));
    LinearLayout footer=col();LinearLayout.LayoutParams footerLayout=new LinearLayout.LayoutParams(-1,-2);footerLayout.topMargin=dp(8);tile.addView(footer,footerLayout);
    TextView price=text("",18,PINK);String priceText=sku.price.isEmpty()?"积分见详情":sku.price+" 大积分";
@@ -79,7 +69,7 @@ public class MainActivity extends Activity {
    Button action=button(sku.soldOut?"已售罄":sku.temporarySoldOut?"暂兑完":"去兑换",!sku.soldOut&&!sku.temporarySoldOut);action.setSingleLine(true);action.setAutoSizeTextTypeUniformWithConfiguration(10,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);
    if(!exchangeStore().get(mid+":"+sku.token).isEmpty())action.setText("核验上次兑换");LinearLayout.LayoutParams actionLayout=new LinearLayout.LayoutParams(-1,dp(44));actionLayout.topMargin=dp(7);footer.addView(action,actionLayout);action.setOnClickListener(v->exchangeClicked(sku));picture.setOnClickListener(v->exchangeClicked(sku));
   }
-  if(row!=null&&exchangeItems.size()%2==1){LinearLayout.LayoutParams empty=new LinearLayout.LayoutParams(0,1,1);empty.setMargins(dp(3),dp(8),dp(3),0);row.addView(new View(this),empty);}
+  if(row!=null&&exchangeItems.size()>1&&exchangeItems.size()%2==1){LinearLayout.LayoutParams empty=new LinearLayout.LayoutParams(0,1,1);empty.setMargins(dp(3),dp(8),dp(3),0);row.addView(new View(this),empty);}
  }
  void pinkGradient(TextView v){v.post(()->{float width=Math.max(1,v.getPaint().measureText(v.getText().toString()));v.getPaint().setShader(new android.graphics.LinearGradient(0,0,width,0,new int[]{0xFFFF82B3,0xFFE63B83},null,android.graphics.Shader.TileMode.CLAMP));v.invalidate();});}
  void accountMenu(){
