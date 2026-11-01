@@ -22,7 +22,6 @@ public final class ExchangeSku {
   int type=j.optInt("user_type");restriction=type==2?"大会员专享":type==3?"年度大会员专享":type==4?"超级大会员专享":"";
  }
  static String number(Object v){try{if(v==null||v==JSONObject.NULL)return "";BigDecimal n=new BigDecimal(v.toString());return n.signum()<0?"":n.stripTrailingZeros().toPlainString();}catch(Exception e){return "";}}
- public ExchangeSku withInventory(JSONObject detail)throws JSONException{JSONObject inv=detail.optJSONObject("inventory");if(inv==null)return this;JSONObject merged=new JSONObject(raw.toString());merged.put("inventory",inv);return new ExchangeSku(merged);}
  public ExchangeSku withDetail(JSONObject detail)throws JSONException{
   if(!token.equals(detail.optString("token")))throw new JSONException("官方商品详情标识不匹配");
   JSONObject merged=new JSONObject(raw.toString());Iterator<String> keys=detail.keys();
