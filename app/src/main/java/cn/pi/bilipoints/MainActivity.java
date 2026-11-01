@@ -16,7 +16,10 @@ public class MainActivity extends Activity {
  void line(LinearLayout parent){View v=new View(this);v.setBackgroundColor(0xFFF1F2F3);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(1));p.setMargins(0,dp(12),0,dp(12));parent.addView(v,p);}
  void build(){
   root=new FrameLayout(this);root.setBackgroundColor(0xFFF5F6F7);setContentView(root);root.setOnApplyWindowInsetsListener((v,w)->{v.setPadding(w.getSystemWindowInsetLeft(),w.getSystemWindowInsetTop(),w.getSystemWindowInsetRight(),w.getSystemWindowInsetBottom());return w;});root.requestApplyInsets();
-  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);content=col();content.setPadding(dp(16),dp(4),dp(16),dp(20));scroll.addView(content);root.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
+  ScrollView scroll=new ScrollView(this);
+  // Task WebViews render below this full-screen opaque surface. Keep it opaque
+  // even though the content column itself has transparent gaps between cards.
+  scroll.setBackgroundColor(0xFFF5F6F7);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);content=col();content.setPadding(dp(16),dp(4),dp(16),dp(20));scroll.addView(content);root.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
   FrameLayout top=new FrameLayout(this);TextView title=text("大积分助手",18,INK);title.setTypeface(null,Typeface.BOLD);title.setGravity(Gravity.CENTER);top.addView(title,new FrameLayout.LayoutParams(-1,dp(52)));Button settings=button("账号",false);settings.setBackgroundColor(android.graphics.Color.TRANSPARENT);FrameLayout.LayoutParams sp=new FrameLayout.LayoutParams(dp(56),dp(44),Gravity.END|Gravity.CENTER_VERTICAL);top.addView(settings,sp);settings.setOnClickListener(v->accountMenu());content.addView(top,new LinearLayout.LayoutParams(-1,dp(52)));
   LinearLayout member=card();LinearLayout identity=new LinearLayout(this);identity.setGravity(Gravity.CENTER_VERTICAL);
   avatar=new ImageView(this);avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);avatar.setBackground(bg(0xFFFDEAF0,28));avatar.setClipToOutline(true);avatar.setImageResource(android.R.drawable.ic_menu_myplaces);avatar.setContentDescription("当前账号头像");identity.addView(avatar,new LinearLayout.LayoutParams(dp(48),dp(48)));avatar.setOnClickListener(v->accountMenu());
