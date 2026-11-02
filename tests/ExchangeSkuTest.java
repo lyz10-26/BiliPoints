@@ -22,7 +22,7 @@ public class ExchangeSkuTest {
   ok(timed.saleInfo(epoch*1000L+1).contains("请刷新库存"),"past schedule is not an available-stock claim");
   ok(sku("\"inventory\":{\"status\":2,\"next_sold_text\":\"每日18点开售\"}").saleInfo(0).contains("每日18点开售"),"official sale wording retained without timestamp");
   ok(sku("\"inventory\":{\"status\":2}").saleInfo(0).contains("暂未获取"),"unknown timing is explicit");
-  ExchangeSku merged=sale.withDetail(new JSONObject("{\"token\":\"vip-card_1\",\"inventory\":{\"status\":2,\"next_sold_time\":1800000000}}"));ok(merged.title.equals(sale.title)&&merged.price.equals(sale.price)&&merged.temporarySoldOut,"detail inventory enrichment preserves listing identity and price");
+  ExchangeSku merged=sale.withInventory(new JSONObject("{\"inventory\":{\"status\":2,\"next_sold_time\":1800000000}}"));ok(merged.title.equals(sale.title)&&merged.price.equals(sale.price)&&merged.temporarySoldOut,"detail inventory enrichment preserves listing identity and price");
   boolean rejected=false;try{ExchangeSku.parse(new JSONObject());}catch(JSONException e){rejected=true;}ok(rejected,"missing schema must not mean an empty shop");
   Capture a=new Capture();a.exchangeSkus(2);ok(a.path.startsWith("/x/vip_point/sku/list?pn=2&ps=20&in_review=0")&&a.body==null,"read-only official listing protocol");
   System.out.println("PASS: official SKU fields, promotions, inventory states, missing data, safe routes and read-only request");
